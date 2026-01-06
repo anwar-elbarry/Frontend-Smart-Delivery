@@ -1,0 +1,12 @@
+@import "tailwindcss";
+
+@theme {
+  /* 1. Set Inter as the default font */
+  --font-sans: "Inter", sans-serif;
+
+  /* 2. Define your custom Brand colors */
+  --color-brand-900: #0f172a; /* Deep Navy */
+  --color-brand-600: #2563eb; /* Primary Blue */
+  --color-brand-500: #3b82f6; /* Light Blue */
+  --color-brand-accent: #10b981; /* Delivery Green */
+}
