@@ -12,7 +12,6 @@ import { Router } from '@angular/router';
 })
 export class AuthService {
   private http = inject(HttpClient);
-  private router = inject(Router);
   private apiUrl = `${environment.apiUrl}/auth`;
 
   private accessToken = '';
@@ -77,6 +76,10 @@ export class AuthService {
 
   getRefreshToken(){
     return this.refreshToken;
+  }
+
+  getCurrentUser(){
+    return this.currentUser();
   }
 
   logout(){
