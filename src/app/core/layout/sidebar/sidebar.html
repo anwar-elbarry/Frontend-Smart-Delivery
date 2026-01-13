@@ -1,0 +1,36 @@
+<aside class="sidebar" [class.collapsed]="isCollapsed()">
+
+  <div class="sidebar-header">
+    @if (!isCollapsed()){
+      <div class="logo-container">
+        <span class="logo-text">Admin</span>
+      </div>
+    }
+    <button class="toggle-btn" (click)="toggleSidebar()">
+      <i class="fa-solid" [class.fa-chevron-left]="!isCollapsed()" [class.fa-chevron-right]="isCollapsed()"></i>
+    </button>
+  </div>
+
+  <nav class="sidebar-nav">
+    <ul>
+      @for (item of filteredMenu(); track item.route) {
+        <li>
+          <a [routerLink]="item.route"
+             routerLinkActive="active"
+             class="nav-item">
+            <span class="icon">
+              <i [class]="item.icon"></i>
+            </span>
+
+            @if (!isCollapsed()) {
+              <span class="label">{{ item.label }}</span>
+            }
+          </a>
+        </li>
+      }
+    </ul>
+  </nav>
+
+  <div class="sidebar-footer">
+  </div>
+</aside>
