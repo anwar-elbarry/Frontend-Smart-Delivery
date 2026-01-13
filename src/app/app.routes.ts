@@ -1,13 +1,19 @@
 import { Routes } from '@angular/router';
-import { LoginComponent } from './features/public/login/login.component/login.component';
+import { authGard } from './core/guards/auth.guard';
 
-export const routes: Routes = [
+const routes: Routes = [
   {
     path: 'login',
-    component: LoginComponent
+    loadComponent: ()=> import('./features/public/login/login.component/login.component').then(m => m.LoginComponent)
   },{
   path: '',
   redirectTo: '/login',
   pathMatch: 'full'
+  },{
+  path: 'dashboard',
+    loadComponent: () => import('./features/dashboard/admin/pages/admin-dashboard/admin-dashboard').then(m  => m.AdminDashboard),
+    canActivate:[authGard]
   }
+
 ];
+export default routes
