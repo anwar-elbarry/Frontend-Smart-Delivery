@@ -21,15 +21,14 @@ export class Sidebar {
 
   menuItems = signal<SidebarModel[]>([
     // Gestionnaire logistique
-    { label: 'Dashboard', icon: 'fa-solid fa-house', route: '/dashboard', roles: [UserRole.GESTIONNAIRE] },
-    { label: 'Colis', icon: 'fa-solid fa-box', route: '/colis', roles: [UserRole.GESTIONNAIRE] },
-    { label: 'Clients', icon: 'fa-solid fa-users', route: '/clients', roles: [UserRole.GESTIONNAIRE] },
-    { label: 'Livreurs', icon: 'fa-solid fa-truck', route: '/livreurs', roles: [UserRole.GESTIONNAIRE] },
-    { label: 'Zones', icon: 'fa-solid fa-map-location-dot', route: '/zones', roles: [UserRole.GESTIONNAIRE] },
+    { label: 'Colis', icon: 'fa-solid fa-box', route: '/dashboard/colis' },
+    { label: 'Clients', icon: 'fa-solid fa-users', route: '/dashboard/clients', roles: [UserRole.GESTIONNAIRE] },
+    { label: 'Livreurs', icon: 'fa-solid fa-truck', route: '/dashboard/livreurs', roles: [UserRole.GESTIONNAIRE] },
+    { label: 'Zones', icon: 'fa-solid fa-map-location-dot', route: '/dashboard/zone', roles: [UserRole.GESTIONNAIRE] },
 
     // Livreur
-    { label: 'Mes Colis', icon: 'fa-solid fa-boxes-stacked', route: '/mes-colis', roles: [UserRole.LIVREUR] },
-    { label: 'Ma Tournée', icon: 'fa-solid fa-route', route: '/tournee', roles: [UserRole.LIVREUR] },
+    { label: 'Mes Colis', icon: 'fa-solid fa-boxes-stacked', route: '/dashboard/mes-colis', roles: [UserRole.LIVREUR] },
+    { label: 'Ma Tournée', icon: 'fa-solid fa-route', route: '/dashboard/tournee', roles: [UserRole.LIVREUR] },
 
     // Client expéditeur
     { label: 'Nouvelle Livraison', icon: 'fa-solid fa-plus-circle', route: '/nouvelle-livraison', roles: [UserRole.EXPEDITEUR] },
