@@ -1,4 +1,5 @@
 import {Provider} from './provider.enum';
+import { User } from './user.rensponse';
 
 export  interface LoginCredentials {
   username: string
@@ -8,16 +9,5 @@ export  interface LoginCredentials {
 export interface AuthResponse {
   accessToken: string;
   refreshToken: string;
-  user: {
-     id: string;
-     nom: string;
-     prenom: string;
-     username: string;
-     email: string;
-     telephone: string;
-     adress: string;
-     roleName: string;
-     provider: Provider;
-     enable: boolean;
-  };
+  user: User;
 }
