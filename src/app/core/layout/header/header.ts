@@ -6,6 +6,7 @@ import { CommonModule } from '@angular/common';
 @Component({
   selector: 'app-header',
   imports: [CommonModule],
+  standalone: true,
   templateUrl: './header.html',
   styleUrl: './header.css',
 })
