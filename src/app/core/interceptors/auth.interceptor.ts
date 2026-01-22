@@ -1,10 +1,14 @@
-import { HttpInterceptorFn } from '@angular/common/http';
-import { inject } from '@angular/core';
+import {HttpEvent, HttpInterceptorFn} from '@angular/common/http';
+import {inject} from '@angular/core';
+import {catchError, Observable, throwError} from "rxjs";
+import {Router} from '@angular/router';
 import {AuthService} from '../services/auth.service';
 
-export const authInterceptor: HttpInterceptorFn = (req, next) => {
-  const auth = inject(AuthService);
-  const token = auth.getAccessToken();
+export const authInterceptor: HttpInterceptorFn = (req, next): Observable<HttpEvent<unknown>> => {
+  const authService = inject(AuthService);
+  const router = inject(Router);
+
+  const token = authService.getAccessToken();
 
   if (token) {
     req = req.clone({
@@ -12,5 +16,13 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
     });
   }
 
-  return next(req);
-};
+  return next(req).pipe(
+    catchError((error) => {
+      if (error.status === 401 || error.status === 403) {
+        authService.logout();
+        router.navigate(['/login'], { queryParams: { error: 'session_expired' } });
+      }
+      return throwError(() => error);
+    })
+  );
+}
