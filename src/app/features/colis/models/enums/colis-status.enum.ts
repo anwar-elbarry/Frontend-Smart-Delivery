@@ -1,0 +1,7 @@
+export enum ColisStatus {
+  CREATED = 'CREATED',
+  COLLECTED = 'COLLECTED',
+  IN_STOCK = 'IN_STOCK',
+  IN_TRANSIT = 'IN_TRANSIT',
+  DELIVERED = 'DELIVERED',
+}

@@ -11,7 +11,7 @@ const routes: Routes = [
   pathMatch: 'full'
   },{
   path: 'dashboard',
-    loadComponent: () => import('./features/dashboard/admin/pages/admin-dashboard/admin-dashboard').then(m  => m.AdminDashboard),
+    loadChildren: () => import('./features/dashboard/dashboard.routes').then(m  => m.default),
     canActivate:[authGard]
   }
 
