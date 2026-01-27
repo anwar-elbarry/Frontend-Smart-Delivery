@@ -1,4 +1,42 @@
 <div class="min-h-screen bg-gray-50 p-6">
+  <!-- Loading State -->
+  @if (isLoading()) {
+    <div class="fixed inset-0 z-50 flex items-center justify-center bg-gray-900 bg-opacity-50">
+      <div class="bg-white rounded-lg p-8 shadow-2xl">
+        <div class="flex flex-col items-center">
+          <div class="animate-spin rounded-full h-16 w-16 border-b-4 border-indigo-600 mb-4"></div>
+          <p class="text-lg font-semibold text-gray-900">Chargement des données...</p>
+          <p class="text-sm text-gray-500 mt-2">Veuillez patienter</p>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- Error State -->
+  @if (hasError()) {
+    <div class="fixed inset-0 z-50 flex items-center justify-center bg-gray-900 bg-opacity-50">
+      <div class="bg-white rounded-lg p-8 shadow-2xl max-w-md">
+        <div class="flex flex-col items-center">
+          <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mb-4">
+            <i class="fa-solid fa-exclamation-triangle text-3xl text-red-600"></i>
+          </div>
+          <p class="text-lg font-semibold text-gray-900 mb-2">Erreur de chargement</p>
+          <p class="text-sm text-gray-500 text-center mb-6">
+            Impossible de charger les données. Veuillez réessayer.
+          </p>
+          <button
+            (click)="refreshList()"
+            class="px-6 py-2.5 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition">
+            <i class="fa-solid fa-refresh mr-2"></i>
+            Réessayer
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- Contenu principal - visible uniquement quand les données sont chargées -->
+  @if (!isLoading() && !hasError()) {
   <div class="max-w-7xl mx-auto">
     <!-- Header -->
     <div class="mb-8">
@@ -25,7 +63,7 @@
         <div class="flex items-center justify-between">
           <div>
             <p class="text-sm font-medium text-gray-600">Total Livreurs</p>
-            <p class="text-3xl font-bold text-gray-900 mt-2">{{ totalLivreurs }}</p>
+            <p class="text-3xl font-bold text-gray-900 mt-2">{{ totalLivreurs() }}</p>
           </div>
           <div class="w-12 h-12 bg-indigo-100 rounded-lg flex items-center justify-center">
             <i class="fa-solid fa-users text-2xl text-indigo-600"></i>
@@ -37,7 +75,7 @@
         <div class="flex items-center justify-between">
           <div>
             <p class="text-sm font-medium text-gray-600">Actifs</p>
-            <p class="text-3xl font-bold text-green-600 mt-2">{{ livreursActifs }}</p>
+            <p class="text-3xl font-bold text-green-600 mt-2">{{ livreursActifs() }}</p>
           </div>
           <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
             <i class="fa-solid fa-user-check text-2xl text-green-600"></i>
@@ -49,7 +87,7 @@
         <div class="flex items-center justify-between">
           <div>
             <p class="text-sm font-medium text-gray-600">Inactifs</p>
-            <p class="text-3xl font-bold text-red-600 mt-2">{{ livreursInactifs }}</p>
+            <p class="text-3xl font-bold text-red-600 mt-2">{{ livreursInactifs() }}</p>
           </div>
           <div class="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center">
             <i class="fa-solid fa-user-slash text-2xl text-red-600"></i>
@@ -61,7 +99,7 @@
         <div class="flex items-center justify-between">
           <div>
             <p class="text-sm font-medium text-gray-600">Avec Colis</p>
-            <p class="text-3xl font-bold text-blue-600 mt-2">{{ livreursAvecColis }}</p>
+            <p class="text-3xl font-bold text-blue-600 mt-2">{{ livreursAvecColis() }}</p>
           </div>
           <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
             <i class="fa-solid fa-box text-2xl text-blue-600"></i>
@@ -79,8 +117,8 @@
           <div class="relative">
             <input
               type="text"
-              [(ngModel)]="searchTerm"
-              (ngModelChange)="applyFilters()"
+              [ngModel]="searchTerm()"
+              (ngModelChange)="searchTerm.set($event)"
               placeholder="Nom, email, téléphone, véhicule..."
               class="w-full px-4 py-2.5 pl-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
             <i class="fa-solid fa-search absolute left-3 top-3.5 text-gray-400"></i>
@@ -91,15 +129,13 @@
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-2">Zone</label>
           <select
-            [(ngModel)]="filterZone"
-            (ngModelChange)="applyFilters()"
+            [ngModel]="filterZone()"
+            (ngModelChange)="filterZone.set($event)"
             class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500">
             <option value="">Toutes zones</option>
-            <option value="Nord">Nord</option>
-            <option value="Sud">Sud</option>
-            <option value="Est">Est</option>
-            <option value="Ouest">Ouest</option>
-            <option value="Centre">Centre</option>
+            @for (zone of allZonesList() ; track zone.id) {
+              <option [value]="zone.nome">{{ zone.nome }}</option>
+            }
           </select>
         </div>
 
@@ -107,8 +143,8 @@
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-2">Véhicule</label>
           <select
-            [(ngModel)]="filterVehicule"
-            (ngModelChange)="applyFilters()"
+            [ngModel]="filterVehicule()"
+            (ngModelChange)="filterVehicule.set($event)"
             class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500">
             <option value="">Tous véhicules</option>
             <option value="Moto">Moto</option>
@@ -158,7 +194,7 @@
             </tr>
           </thead>
           <tbody class="bg-white divide-y divide-gray-200">
-            @for (livreur of livreursList; track livreur.id) {
+            @for (livreur of livreursList(); track livreur.id) {
               <tr class="hover:bg-gray-50 transition">
                 <td class="px-6 py-4">
                   <div class="flex items-center">
@@ -254,7 +290,7 @@
       <div class="bg-white px-6 py-4 border-t border-gray-200">
         <div class="flex items-center justify-between">
           <div class="text-sm text-gray-700">
-            Total: <span class="font-semibold">{{ livreursList.length }}</span> livreur(s)
+            Total: <span class="font-semibold">{{ livreursList().length }}</span> livreur(s)
           </div>
           <button
             (click)="exportToCSV()"
@@ -390,7 +426,7 @@
                   [(ngModel)]="selectedColisId"
                   class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 bg-white">
                   <option value="">-- Choisir un colis --</option>
-                  @for (colis of availableColis; track colis.id) {
+                  @for (colis of availableColis(); track colis.id) {
                     <option [value]="colis.id">{{ colis.id }} - {{ colis.description }}</option>
                   }
                 </select>
@@ -433,4 +469,5 @@
     </div>
     }
   </div>
+  }
 </div>
