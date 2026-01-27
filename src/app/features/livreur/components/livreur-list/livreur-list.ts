@@ -1,10 +1,13 @@
-import {Component, inject, OnInit, signal} from '@angular/core';
+import {Component, computed, inject, signal} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { LivreurResp } from '../../models/livreur.reponse';
 import {LivreurService} from '../../service/livreur.service';
 import {LivreurCreate} from '../livreur-create/livreur-create';
 import { Provider } from '../../../../core/models/auth/provider.enum';
+import {ZoneService} from '../../../zone/zone.service';
+import { ColisService } from '../../../colis/services/colis.service';
+import { ZoneResp } from '../../../zone/models/zone.response';
 
 @Component({
   selector: 'app-livreur-list',
@@ -13,11 +16,20 @@ import { Provider } from '../../../../core/models/auth/provider.enum';
   templateUrl: './livreur-list.html',
   styleUrl: './livreur-list.css',
 })
-export class LivreurList implements OnInit {
+export class LivreurList {
 
-  private LivreurService = inject(LivreurService);
-  livreursList: LivreurResp[] = [];
+  private livreurService = inject(LivreurService);
+  private zoneService = inject(ZoneService);
+  private colisService = inject(ColisService);
 
+  // Signals pour les données
+  private allLivreursData = signal<LivreurResp[]>([]);
+  allZonesList = signal<ZoneResp[]>([]);
+  availableColis = signal<any[]>([]);
+
+  // États de chargement
+  isLoading = signal(true);
+  hasError = signal(false);
 
   // Modal properties
   showViewModal = false;
@@ -27,60 +39,19 @@ export class LivreurList implements OnInit {
   selectedLivreur = signal<LivreurResp | null>(null);
 
   // Filter properties
-  searchTerm = '';
-  filterZone = '';
-  filterVehicule = '';
-
-  // All livreurs (unfiltered)
-  private allLivreursList: LivreurResp[] = [];
-
-  // Assign colis properties
-  availableColis: any[] = [];
-  selectedColisId = '';
-
-  // Computed stats
-  get totalLivreurs(): number {
-    return this.allLivreursList.length;
-  }
-
-  get livreursActifs(): number {
-    return this.allLivreursList.filter(l => l.user.enable).length;
-  }
-
-  get livreursInactifs(): number {
-    return this.allLivreursList.filter(l => !l.user.enable).length;
-  }
-
-  get livreursAvecColis(): number {
-    // For now, return a mock number
-    return 5;
-  }
+  searchTerm = signal('');
+  filterZone = signal('');
+  filterVehicule = signal('');
 
 
-  ngOnInit() {
-    this.loadAllLivreurs();
-  }
-
-  loadAllLivreurs(){
-    this.LivreurService.getAll().subscribe({
-      next: resp => {
-        this.allLivreursList = resp;
-        this.applyFilters();
-      },
-      error: err => {
-        console.log('error while feching livreurList',err);
-      }
-    })
-  }
-
-
-  // Filter methods
-  applyFilters() {
-    let filtered = [...this.allLivreursList];
+  // Liste filtrée de livreurs basée sur les ressources et filtres
+  livreursList = computed(() => {
+    const livreurs = this.allLivreursData();
+    let filtered = [...livreurs];
 
     // Apply search term
-    if (this.searchTerm.trim()) {
-      const search = this.searchTerm.toLowerCase().trim();
+    const search = this.searchTerm().toLowerCase().trim();
+    if (search) {
       filtered = filtered.filter(livreur =>
         livreur.user.nom?.toLowerCase().includes(search) ||
         livreur.user.prenom?.toLowerCase().includes(search) ||
@@ -91,27 +62,112 @@ export class LivreurList implements OnInit {
     }
 
     // Apply zone filter
-    if (this.filterZone) {
+    const zone = this.filterZone();
+    if (zone) {
       filtered = filtered.filter(livreur =>
-        livreur.zoneAssignee?.nome?.includes(this.filterZone)
+        livreur.zoneAssignee?.nome?.includes(zone)
       );
     }
 
     // Apply vehicule filter
-    if (this.filterVehicule) {
+    const vehicule = this.filterVehicule();
+    if (vehicule) {
       filtered = filtered.filter(livreur =>
-        livreur.vehicule === this.filterVehicule
+        livreur.vehicule === vehicule
       );
     }
 
-    this.livreursList = filtered;
+    return filtered;
+  });
+
+  // Computed stats basés sur toutes les données
+  totalLivreurs = computed(() => {
+    return this.allLivreursData().length;
+  });
+
+  livreursActifs = computed(() => {
+    return this.allLivreursData().filter(l => l.user.enable).length;
+  });
+
+  livreursInactifs = computed(() => {
+    return this.allLivreursData().filter(l => !l.user.enable).length;
+  });
+
+  livreursAvecColis = computed(() => {
+    // TODO: Implémenter le comptage réel basé sur les colis assignés
+    return 5;
+  });
+
+  selectedColisId = '';
+
+  constructor() {
+    // Charger les données au démarrage
+    this.loadAllData();
+  }
+
+  // Charger toutes les données
+  private loadAllData() {
+    this.isLoading.set(true);
+    this.hasError.set(false);
+
+    // Compteur pour suivre les requêtes terminées
+    let completed = 0;
+    const total = 3;
+    let hasErrors = false;
+
+    const checkComplete = () => {
+      completed++;
+      if (completed === total) {
+        this.isLoading.set(false);
+        this.hasError.set(hasErrors);
+      }
+    };
+
+    // Charger les livreurs
+    this.livreurService.getAll().subscribe({
+      next: (data) => {
+        this.allLivreursData.set(data);
+        checkComplete();
+      },
+      error: (err) => {
+        console.error('Erreur lors du chargement des livreurs:', err);
+        hasErrors = true;
+        checkComplete();
+      }
+    });
+
+    // Charger les zones
+    this.zoneService.getAll().subscribe({
+      next: (data) => {
+        this.allZonesList.set(data);
+        checkComplete();
+      },
+      error: (err) => {
+        console.error('Erreur lors du chargement des zones:', err);
+        hasErrors = true;
+        checkComplete();
+      }
+    });
+
+    // Charger les colis
+    this.colisService.getAllColis(0, 1000).subscribe({
+      next: (data) => {
+        const availableColisList = data.content?.filter((c: any) => !c.livreurId) ?? [];
+        this.availableColis.set(availableColisList);
+        checkComplete();
+      },
+      error: (err) => {
+        console.error('Erreur lors du chargement des colis:', err);
+        hasErrors = true;
+        checkComplete();
+      }
+    });
   }
 
   clearFilters() {
-    this.searchTerm = '';
-    this.filterZone = '';
-    this.filterVehicule = '';
-    this.applyFilters();
+    this.searchTerm.set('');
+    this.filterZone.set('');
+    this.filterVehicule.set('');
   }
 
   // Action methods
@@ -146,10 +202,9 @@ export class LivreurList implements OnInit {
     this.selectedLivreur.set(null);
   }
 
-  handleCreate(newLivreur: LivreurResp) {
-    // Ajouter le nouveau livreur à la liste
-    this.allLivreursList.push(newLivreur);
-    this.applyFilters();
+  handleCreate(_newLivreur: LivreurResp) {
+    // Recharger les données pour obtenir la liste à jour du serveur
+    this.loadAllData();
   }
 
   viewLivreur(livreur: LivreurResp) {
@@ -164,10 +219,10 @@ export class LivreurList implements OnInit {
 
   deleteLivreur(livreur: LivreurResp) {
     if (confirm(`Êtes-vous sûr de vouloir supprimer le livreur ${livreur.user.nom} ${livreur.user.prenom} ?`)) {
-      this.LivreurService.deleteLivreur(livreur.id).subscribe({
+      this.livreurService.deleteLivreur(livreur.id).subscribe({
         next: () => {
-          this.allLivreursList = this.allLivreursList.filter(l => l.id !== livreur.id);
-          this.applyFilters();
+          // Recharger les données pour obtenir la liste à jour
+          this.loadAllData();
           console.log('Livreur supprimé avec succès');
         },
         error: (err) => {
@@ -194,13 +249,8 @@ export class LivreurList implements OnInit {
     this.selectedLivreur.set(null);
   }
 
-  handleUpdate(updatedLivreur: LivreurResp) {
-    // Mettre à jour le livreur dans la liste
-    const index = this.allLivreursList.findIndex(l => l.id === updatedLivreur.id);
-    if (index !== -1) {
-      this.allLivreursList[index] = updatedLivreur;
-    }
-    this.applyFilters();
+  handleUpdate(_updatedLivreur: LivreurResp) {
+    this.loadAllData();
   }
 
   closeAssignColisModal() {
@@ -226,9 +276,10 @@ export class LivreurList implements OnInit {
       zoneAssigneeId: livreur.zoneAssignee?.id
     };
 
-    this.LivreurService.updateLivreur(livreur.id, request).subscribe({
-      next: (resp) => {
-        livreur.user.enable = resp.user.enable;
+    this.livreurService.updateLivreur(livreur.id, request).subscribe({
+      next: () => {
+        // Recharger les données pour obtenir la liste à jour
+        this.loadAllData();
         console.log('Statut du livreur mis à jour');
       },
       error: (err) => {
@@ -240,13 +291,13 @@ export class LivreurList implements OnInit {
 
   // Rafraîchir la liste des livreurs
   refreshList() {
-    this.loadAllLivreurs();
+    this.loadAllData();
   }
 
   // Exporter la liste en CSV
   exportToCSV() {
     const headers = ['Nom', 'Prénom', 'Email', 'Téléphone', 'Véhicule', 'Zone', 'Statut'];
-    const csvData = this.livreursList.map(l => [
+    const csvData = this.livreursList().map(l => [
       l.user.nom,
       l.user.prenom,
       l.user.email,
