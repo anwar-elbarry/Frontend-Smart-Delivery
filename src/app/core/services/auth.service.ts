@@ -71,7 +71,6 @@ export class AuthService {
   }
 
   getAccessToken(){
-    console.log('token: '+this.accessToken);
     return this.accessToken;
   }
 
