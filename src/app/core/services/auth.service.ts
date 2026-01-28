@@ -37,7 +37,7 @@ export class AuthService {
        tap((resp) => {
          const user: CurrentUser = {
            ...resp.user,
-           role: resp.user.roleName as UserRole,
+           role: resp.user.role.roleName as UserRole,
            enabled: resp.user.enable,
            isAuthenticated: true
          };
