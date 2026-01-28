@@ -57,7 +57,7 @@ export class ColiCreate implements OnInit {
     this.userService.getAll().subscribe({
       next: (users) => {
         const clients = users.filter(user =>
-          user.roleName === 'EXPEDITEUR'
+          user.role.roleName === 'EXPEDITEUR'
         );
         this.availableExpediteurs.set(clients);
       },
@@ -71,7 +71,7 @@ export class ColiCreate implements OnInit {
     this.userService.getAll().subscribe({
       next: (users) => {
         const clients = users.filter(user =>
-          user.roleName === 'DESTINATAIRE'
+          user.role.roleName === 'DESTINATAIRE'
         );
         this.availableDestinataires.set(clients);
       },
