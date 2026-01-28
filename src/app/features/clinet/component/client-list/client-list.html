@@ -1,0 +1,420 @@
+<div class="min-h-screen bg-gray-50 p-6">
+  <div class="max-w-7xl mx-auto">
+    <!-- Header -->
+    <div class="mb-8">
+      <div class="flex items-center justify-between">
+        <div>
+          <h1 class="text-3xl font-bold text-gray-900">
+            <i class="fa-solid fa-users mr-3 text-indigo-600"></i>
+            Gestion des Clients
+          </h1>
+          <p class="text-gray-600 mt-2">Liste complète de tous les clients</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Filtres et Recherche -->
+    <div class="bg-white rounded-lg shadow p-6 mb-6">
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+        <!-- Recherche -->
+        <div class="md:col-span-2">
+          <label class="block text-sm font-medium text-gray-700 mb-2">Rechercher</label>
+          <div class="relative">
+            <input
+              type="text"
+              [(ngModel)]="searchTerm"
+              (ngModelChange)="applyFilters()"
+              placeholder="Nom, email, téléphone, username..."
+              class="w-full px-4 py-2.5 pl-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+            <i class="fa-solid fa-search absolute left-3 top-3.5 text-gray-400"></i>
+          </div>
+        </div>
+
+        <!-- Filtre Statut -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">Statut</label>
+          <select
+            [(ngModel)]="filterStatus"
+            (ngModelChange)="applyFilters()"
+            class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500">
+            <option value="">Tous les statuts</option>
+            <option value="active">Actifs</option>
+            <option value="inactive">Inactifs</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="flex justify-between items-center">
+        <button
+          (click)="clearFilters()"
+          class="px-4 py-2 text-sm text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition">
+          <i class="fa-solid fa-filter-circle-xmark mr-2"></i>
+          Effacer les filtres
+        </button>
+      </div>
+    </div>
+
+    <!-- Table des Clients -->
+    <div class="bg-white rounded-lg shadow overflow-hidden">
+      <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-200">
+          <thead class="bg-gray-50">
+            <tr>
+              <th class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Client</th>
+              <th class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Contact</th>
+              <th class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Adresse</th>
+              <th class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Provider</th>
+              <th class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Statut</th>
+              <th class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="bg-white divide-y divide-gray-200">
+            @for (client of clientsList(); track client.id) {
+              <tr class="hover:bg-gray-50 transition">
+                <td class="px-6 py-4">
+                  <div class="flex items-center">
+                    <div class="w-10 h-10 bg-indigo-100 rounded-full flex items-center justify-center mr-3">
+                      <i class="fa-solid fa-user text-indigo-600"></i>
+                    </div>
+                    <div>
+                      <div class="text-sm font-semibold text-gray-900">{{ client.nom }} {{ client.prenom }}</div>
+                      <div class="text-xs text-gray-500">@{{ client.username }}</div>
+                    </div>
+                  </div>
+                </td>
+                <td class="px-6 py-4">
+                  <div class="text-sm text-gray-900">{{ client.email }}</div>
+                  <div class="text-xs text-gray-500">{{ client.telephone }}</div>
+                </td>
+                <td class="px-6 py-4 text-sm text-gray-600">{{ client.adress }}</td>
+                <td class="px-6 py-4">
+                  <span class="px-3 py-1 text-xs font-semibold rounded-full" [ngClass]="{
+                    'bg-blue-100 text-blue-800': client.provider === 'LOCAL',
+                    'bg-red-100 text-red-800': client.provider === 'GOOGLE',
+                    'bg-purple-100 text-purple-800': client.provider === 'FACEBOOK'
+                  }">
+                    <i [ngClass]="{
+                      'fa-key': client.provider === 'LOCAL',
+                      'fa-brands fa-google': client.provider === 'GOOGLE',
+                      'fa-brands fa-facebook': client.provider === 'FACEBOOK'
+                    }" class="fa-solid mr-1"></i>
+                    {{ client.provider }}
+                  </span>
+                </td>
+                <td class="px-6 py-4">
+                  <span [ngClass]="{
+                    'bg-green-100 text-green-800': client.enable,
+                    'bg-red-100 text-red-800': !client.enable
+                  }" class="px-3 py-1 text-xs font-semibold rounded-full flex items-center w-fit">
+                    <i [ngClass]="{
+                      'fa-check-circle': client.enable,
+                      'fa-times-circle': !client.enable
+                    }" class="fa-solid mr-1.5"></i>
+                    {{ client.enable ? 'Actif' : 'Inactif' }}
+                  </span>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                  <div class="flex items-center space-x-2">
+                    <button
+                      (click)="viewClient(client)"
+                      class="text-blue-600 hover:text-blue-800 p-2 hover:bg-blue-50 rounded-lg transition"
+                      title="Voir les détails">
+                      <i class="fa-solid fa-eye"></i>
+                    </button>
+                    <button
+                      (click)="editClient(client)"
+                      class="text-indigo-600 hover:text-indigo-800 p-2 hover:bg-indigo-50 rounded-lg transition"
+                      title="Modifier">
+                      <i class="fa-solid fa-edit"></i>
+                    </button>
+                    <button
+                      (click)="toggleClientStatus(client)"
+                      [class.text-green-600]="!client.enable"
+                      [class.hover:text-green-800]="!client.enable"
+                      [class.hover:bg-green-50]="!client.enable"
+                      [class.text-orange-600]="client.enable"
+                      [class.hover:text-orange-800]="client.enable"
+                      [class.hover:bg-orange-50]="client.enable"
+                      class="p-2 rounded-lg transition"
+                      [title]="client.enable ? 'Désactiver' : 'Activer'">
+                      <i [ngClass]="{
+                        'fa-toggle-on': client.enable,
+                        'fa-toggle-off': !client.enable
+                      }" class="fa-solid"></i>
+                    </button>
+                    <button
+                      (click)="deleteClient(client)"
+                      class="text-red-600 hover:text-red-800 p-2 hover:bg-red-50 rounded-lg transition"
+                      title="Supprimer">
+                      <i class="fa-solid fa-trash"></i>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            } @empty {
+              <tr>
+                <td colspan="6" class="px-6 py-12 text-center">
+                  <div class="flex flex-col items-center justify-center text-gray-500">
+                    <i class="fa-solid fa-users text-6xl mb-4 text-gray-300"></i>
+                    <p class="text-lg font-medium">Aucun client trouvé</p>
+                    <p class="text-sm">Ajustez vos filtres ou ajoutez un nouveau client</p>
+                  </div>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Pagination -->
+      <div class="bg-white px-6 py-4 border-t border-gray-200">
+        <div class="flex items-center justify-between">
+          <div class="text-sm text-gray-700">
+            Affichage de <span class="font-semibold">{{ currentPage * pageSize + 1 }}</span> à
+            <span class="font-semibold">{{ (currentPage + 1) * pageSize > totalElements ? totalElements : (currentPage + 1) * pageSize }}</span>
+            sur <span class="font-semibold">{{ totalElements }}</span> résultats
+          </div>
+          <div class="flex space-x-2">
+            <button
+              (click)="previousPage()"
+              [disabled]="currentPage === 0"
+              class="px-4 py-2 text-sm text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed">
+              <i class="fa-solid fa-chevron-left mr-2"></i>
+              Précédent
+            </button>
+
+            @for (page of [].constructor(totalPages); track $index) {
+              @if ($index < 5 || $index === currentPage) {
+                <button
+                  (click)="goToPage($index)"
+                  [class.bg-indigo-600]="currentPage === $index"
+                  [class.text-white]="currentPage === $index"
+                  [class.border-indigo-600]="currentPage === $index"
+                  class="px-4 py-2 text-sm text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50">
+                  {{ $index + 1 }}
+                </button>
+              }
+            }
+
+            <button
+              (click)="nextPage()"
+              [disabled]="currentPage >= totalPages - 1"
+              class="px-4 py-2 text-sm text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed">
+              Suivant
+              <i class="fa-solid fa-chevron-right ml-2"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- View Modal -->
+    @if (showViewModal && selectedClient) {
+    <div class="fixed inset-0 z-50 overflow-y-auto" (click)="closeViewModal()">
+      <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
+        <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-3xl sm:w-full" (click)="$event.stopPropagation()">
+          <div class="bg-white px-6 py-6">
+            <div class="flex items-center justify-between mb-6">
+              <h3 class="text-2xl font-bold text-gray-900">
+                <i class="fa-solid fa-user mr-3 text-indigo-600"></i>
+                Détails du Client
+              </h3>
+              <button (click)="closeViewModal()" class="text-gray-400 hover:text-gray-500">
+                <i class="fa-solid fa-times text-2xl"></i>
+              </button>
+            </div>
+
+            <div class="grid grid-cols-2 gap-6">
+              <div>
+                <label class="text-sm font-semibold text-gray-600">Nom</label>
+                <p class="text-lg text-gray-900 mt-1">{{ selectedClient.nom }}</p>
+              </div>
+              <div>
+                <label class="text-sm font-semibold text-gray-600">Prénom</label>
+                <p class="text-lg text-gray-900 mt-1">{{ selectedClient.prenom }}</p>
+              </div>
+              <div>
+                <label class="text-sm font-semibold text-gray-600">Username</label>
+                <p class="text-lg text-gray-900 mt-1">@{{ selectedClient.username }}</p>
+              </div>
+              <div>
+                <label class="text-sm font-semibold text-gray-600">Email</label>
+                <p class="text-lg text-gray-900 mt-1">{{ selectedClient.email }}</p>
+              </div>
+              <div>
+                <label class="text-sm font-semibold text-gray-600">Téléphone</label>
+                <p class="text-lg text-gray-900 mt-1">{{ selectedClient.telephone }}</p>
+              </div>
+              <div>
+                <label class="text-sm font-semibold text-gray-600">Provider</label>
+                <p class="text-lg text-gray-900 mt-1">{{ selectedClient.provider }}</p>
+              </div>
+              <div class="col-span-2">
+                <label class="text-sm font-semibold text-gray-600">Adresse</label>
+                <p class="text-lg text-gray-900 mt-1">{{ selectedClient.adress }}</p>
+              </div>
+              <div>
+                <label class="text-sm font-semibold text-gray-600">Statut</label>
+                <p class="text-lg mt-1">
+                  <span [ngClass]="{
+                    'bg-green-100 text-green-800': selectedClient.enable,
+                    'bg-red-100 text-red-800': !selectedClient.enable
+                  }" class="px-3 py-1 text-sm font-semibold rounded-full">
+                    {{ selectedClient.enable ? 'Actif' : 'Inactif' }}
+                  </span>
+                </p>
+              </div>
+            </div>
+
+            <div class="mt-8 flex justify-end space-x-3">
+              <button (click)="closeViewModal()" class="px-6 py-2.5 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition">
+                Fermer
+              </button>
+              <button (click)="editClient(selectedClient); closeViewModal()" class="px-6 py-2.5 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition">
+                <i class="fa-solid fa-edit mr-2"></i>
+                Modifier
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    }
+
+    <!-- Edit Modal -->
+    @if (showEditModal && selectedClient) {
+    <div class="fixed inset-0 z-50 overflow-y-auto" (click)="closeEditModal()">
+      <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
+        <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl sm:w-full" (click)="$event.stopPropagation()">
+          <div class="bg-white">
+            <!-- Header -->
+            <div class="bg-gradient-to-r from-indigo-600 to-purple-600 px-8 py-6">
+              <div class="flex items-center justify-between">
+                <div>
+                  <h2 class="text-3xl font-bold text-white flex items-center">
+                    <i class="fa-solid fa-edit mr-3"></i>
+                    Modifier le Client
+                  </h2>
+                  <p class="text-indigo-100 mt-2">ID: {{ selectedClient.id }}</p>
+                </div>
+                <button (click)="closeEditModal()" class="text-white hover:text-indigo-100 transition">
+                  <i class="fa-solid fa-times text-3xl"></i>
+                </button>
+              </div>
+            </div>
+
+            <!-- Form -->
+            <form class="px-8 py-6 space-y-6">
+              <div class="grid grid-cols-2 gap-6">
+                <div>
+                  <label class="block text-sm font-semibold text-gray-700 mb-2">
+                    <i class="fa-solid fa-user text-indigo-600 mr-2"></i>
+                    Nom
+                  </label>
+                  <input
+                    type="text"
+                    [(ngModel)]="selectedClient.nom"
+                    name="nom"
+                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500">
+                </div>
+
+                <div>
+                  <label class="block text-sm font-semibold text-gray-700 mb-2">
+                    <i class="fa-solid fa-user text-indigo-600 mr-2"></i>
+                    Prénom
+                  </label>
+                  <input
+                    type="text"
+                    [(ngModel)]="selectedClient.prenom"
+                    name="prenom"
+                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500">
+                </div>
+
+                <div>
+                  <label class="block text-sm font-semibold text-gray-700 mb-2">
+                    <i class="fa-solid fa-at text-indigo-600 mr-2"></i>
+                    Username
+                  </label>
+                  <input
+                    type="text"
+                    [(ngModel)]="selectedClient.username"
+                    name="username"
+                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500">
+                </div>
+
+                <div>
+                  <label class="block text-sm font-semibold text-gray-700 mb-2">
+                    <i class="fa-solid fa-envelope text-indigo-600 mr-2"></i>
+                    Email
+                  </label>
+                  <input
+                    type="email"
+                    [(ngModel)]="selectedClient.email"
+                    name="email"
+                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500">
+                </div>
+
+                <div>
+                  <label class="block text-sm font-semibold text-gray-700 mb-2">
+                    <i class="fa-solid fa-phone text-indigo-600 mr-2"></i>
+                    Téléphone
+                  </label>
+                  <input
+                    type="text"
+                    [(ngModel)]="selectedClient.telephone"
+                    name="telephone"
+                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500">
+                </div>
+
+                <div>
+                  <label class="block text-sm font-semibold text-gray-700 mb-2">
+                    <i class="fa-solid fa-toggle-on text-indigo-600 mr-2"></i>
+                    Statut
+                  </label>
+                  <select
+                    [(ngModel)]="selectedClient.enable"
+                    name="enable"
+                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 bg-white">
+                    <option [ngValue]="true">Actif</option>
+                    <option [ngValue]="false">Inactif</option>
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-2">
+                  <i class="fa-solid fa-location-dot text-indigo-600 mr-2"></i>
+                  Adresse
+                </label>
+                <input
+                  type="text"
+                  [(ngModel)]="selectedClient.adress"
+                  name="adress"
+                  class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500">
+              </div>
+
+              <!-- Actions -->
+              <div class="flex gap-4 pt-4 border-t border-gray-200">
+                <button
+                  type="button"
+                  (click)="closeEditModal()"
+                  class="flex-1 px-6 py-3 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition duration-200 font-semibold flex items-center justify-center">
+                  <i class="fa-solid fa-times mr-2"></i>
+                  Annuler
+                </button>
+                <button
+                  type="button"
+                  (click)="updateClient()"
+                  class="flex-1 px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-lg hover:from-indigo-700 hover:to-purple-700 transition duration-200 font-semibold flex items-center justify-center">
+                  <i class="fa-solid fa-save mr-2"></i>
+                  Mettre à jour
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+    }
+  </div>
+</div>
