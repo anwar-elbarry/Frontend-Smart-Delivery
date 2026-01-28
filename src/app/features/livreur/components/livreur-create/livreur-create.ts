@@ -71,8 +71,8 @@ export class LivreurCreate implements OnInit {
       next: (users) => {
         // Filtrer uniquement les utilisateurs avec le rôle CLIENT
         const clientUsers = users.filter(user =>
-          user.roleName?.toLowerCase() === 'client' ||
-          user.roleName === 'CLIENT'
+          user.role.roleName?.toLowerCase() === 'client' ||
+          user.role.roleName === 'CLIENT'
         );
         this.availableUsers.set(clientUsers);
       },

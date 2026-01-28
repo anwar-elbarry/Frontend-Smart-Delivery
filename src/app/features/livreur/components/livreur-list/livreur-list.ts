@@ -183,8 +183,13 @@ export class LivreurList {
         telephone: '',
         adress: '',
         username: '',
-        roleName: 'LIVREUR',
+        role: {
+          id:'',
+          roleName: '',
+          permissions: []
+        },
         provider: Provider.LOCAL,
+        providerId: '',
         enable: true
       },
       vehicule: '',
