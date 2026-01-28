@@ -34,6 +34,7 @@ export class Sidebar {
     { label: 'Nouvelle Livraison', icon: 'fa-solid fa-plus-circle', route: '/nouvelle-livraison', roles: [UserRole.EXPEDITEUR] },
     { label: 'Mes Envois', icon: 'fa-solid fa-paper-plane', route: '/mes-envois', roles: [UserRole.EXPEDITEUR] },
     { label: 'Historique', icon: 'fa-solid fa-clock-rotate-left', route: '/historique', roles: [UserRole.EXPEDITEUR] },
+    { label: 'Produits', icon: 'fa-solid fa-clock-rotate-left', route: '/dashboard/products'},
 
     // Destinataire
     { label: 'Mes Réceptions', icon: 'fa-solid fa-inbox', route: '/mes-receptions', roles: [UserRole.DESTINATAIRE] },
