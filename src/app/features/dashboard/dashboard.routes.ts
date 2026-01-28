@@ -5,10 +5,10 @@ const DASH_ROUTES: Routes =[
             path:'',
             loadComponent: () => import('./dashboard-component/dashboard-component').then(m => m.DashboardComponent),
             children: [
-  { 
-        path: '', 
-        redirectTo: 'colis', 
-        pathMatch: 'full' 
+  {
+        path: '',
+        redirectTo: 'colis',
+        pathMatch: 'full'
       },{
         path: 'colis',
         loadChildren: () => import('../colis/colis.routes').then(m => m.default)
@@ -25,7 +25,11 @@ const DASH_ROUTES: Routes =[
       {
         path: 'clients',
         loadComponent: () => import('../clinet/component/client-list/client-list').then(m => m.ClientList)
-      }
+      },
+       {
+         path: 'products',
+         loadComponent: () => import('../produit/components/produit-list/produit-list').then(m => m.ProduitList)
+       }
             ]
         }
 ]
