@@ -11,8 +11,11 @@ export const authInterceptor: HttpInterceptorFn = (req, next): Observable<HttpEv
   const token = authService.getAccessToken();
 
   if (token) {
+    console.log('token: ',token);
     req = req.clone({
-      setHeaders: { Authorization: `Bearer ${token}` }
+      setHeaders: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json'}
     });
   }
 
