@@ -1,4 +1,5 @@
 import { Provider } from "./provider.enum";
+import {RoleRespose} from '../role.respose';
 
 export interface User{
      id: string;
@@ -8,7 +9,8 @@ export interface User{
      email: string;
      telephone: string;
      adress: string;
-     roleName: string;
+     role: RoleRespose;
      provider: Provider;
+     providerId: string;
      enable: boolean;
-  };
+  }
