@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import {Component, OnInit, inject, signal} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ZoneResp } from '../../models/zone.response';
@@ -16,7 +16,7 @@ export class ZoneList implements OnInit {
   private zoneService = inject(ZoneService);
 
   zonesList: ZoneResp[] = [];
-  paginatedZones: ZoneResp[] = [];
+  paginatedZones = signal<ZoneResp[]>([]);
 
   // Pagination properties
   currentPage = 0;
@@ -76,7 +76,7 @@ export class ZoneList implements OnInit {
   updatePaginatedZones() {
     const startIndex = this.currentPage * this.pageSize;
     const endIndex = startIndex + this.pageSize;
-    this.paginatedZones = this.zonesList.slice(startIndex, endIndex);
+    this.paginatedZones.set(this.zonesList.slice(startIndex, endIndex));
   }
 
   clearFilters() {
